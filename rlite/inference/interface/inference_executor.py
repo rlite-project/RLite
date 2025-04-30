@@ -31,5 +31,9 @@ class BaseInferenceExecutor(BaseExecutor, abc.ABC):
         ]
         return futures
 
+    def device(self) -> str:
+        futures = [worker.get_device.remote() for worker in self.workers]
+        return futures
+
 
 INFERENCE_EXECUTOR_REGISTRY = Registry("Inference Executors")

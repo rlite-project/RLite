@@ -13,7 +13,7 @@ from rlite.nn.inference_module import BaseInferenceModule
 from rlite.utils.need_parallel import NeedParallel
 
 
-class OoneInferenceEngine(BaseEngine):
+class RliteInferenceEngine(BaseEngine):
     def __init__(
         self,
         module_or_path: str | BaseInferenceModule,
@@ -45,7 +45,7 @@ class OoneInferenceEngine(BaseEngine):
         use_tqdm: bool = True,
         tqdm_desc: str = "Processed prompts"
     ) -> list[RequestOutput]:
-        # OoneInferenceEngine.generate() will spread the prompts evenly to all
+        # RliteInferenceEngine.generate() will spread the prompts evenly to all
         # the workers. It is the caller's responsibility to handle the load
         # balance issue.
 

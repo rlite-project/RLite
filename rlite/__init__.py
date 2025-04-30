@@ -1,12 +1,54 @@
-from rlite.inference import OoneInferenceEngine
+from rlite.inference import RliteInferenceEngine
 from rlite.resman import ResourceManager
-from rlite.train import OoneTrainEngine
-from rlite.utils import DummySummaryWriter, NeedParallel
+from rlite.train import RliteTrainEngine
+from rlite.utils import NeedParallel
+
+
+def init(
+    dedup_logs: bool = False,
+    debug_mode: str = "debugpy",
+    debug_post_mortem: bool = False,
+    suppress_vllm_logging: bool = False,
+):
+    import os
+    import socket
+
+    import ray
+
+    assert not ray.is_initialized(), "Let rlite initialize the ray!"
+
+    assert debug_mode in ["debugpy", "pdb"], f"Invalid debug mode: {debug_mode}"
+
+    ray_env = {"env_vars": {"RAY_DEDUP_LOGS": "0"}}
+
+    if debug_mode == "pdb":
+        os.environ["RAY_DEBUG"] = "legacy"
+        ray_env["env_vars"]["RAY_DEBUG"] = "legacy"
+        ray_env["env_vars"]["REMOTE_PDB_HOST"] = socket.gethostbyname(socket.gethostname())
+
+    if debug_post_mortem:
+        os.environ["RAY_DEBUG_POST_MORTEM"] = "1"
+        ray_env["env_vars"]["RAY_DEBUG_POST_MORTEM"] = "1"
+
+    if dedup_logs:
+        ray_env["env_vars"]["RAY_DEDUP_LOGS"] = "1"
+
+    if suppress_vllm_logging:
+        os.environ["VLLM_CONFIGURE_LOGGING"] = "0"
+        os.environ["VLLM_LOGGING_LEVEL"] = "ERROR"
+        ray_env["env_vars"]["VLLM_CONFIGURE_LOGGING"] = "0"
+        ray_env["env_vars"]["VLLM_LOGGING_LEVEL"] = "ERROR"
+
+    ray.init(runtime_env=ray_env)
+
+    import rlite.resman
+
+    rlite.resman.RESMAN = ResourceManager()
+
 
 __all__ = [
     "NeedParallel",
-    "OoneTrainEngine",
-    "OoneInferenceEngine",
-    "ResourceManager",
-    "DummySummaryWriter"
+    "RliteTrainEngine",
+    "RliteInferenceEngine",
+    "ResourceManager"
 ]

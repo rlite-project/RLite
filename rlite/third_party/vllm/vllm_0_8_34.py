@@ -120,7 +120,7 @@ class LLM(BaseLLM):
 
     def sleep(self, level: int = 1):
         assert isinstance(self.llm_engine.model_executor, ExecutorWithExternalLauncher), \
-            "In oone parallel, we only support ExecutorWithExternalLauncher!"
+            "In Rlite parallel, we only support ExecutorWithExternalLauncher!"
 
         self.reset_prefix_cache()
 

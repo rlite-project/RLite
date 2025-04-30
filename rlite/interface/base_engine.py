@@ -29,6 +29,9 @@ class BaseEngine(ResourceConsumer, abc.ABC):
     # ----- Shared methods and properties ----- #
 
     def __init__(self, resource_manager: ResourceManager | None = None):
+        if resource_manager is None:
+            import rlite.resman
+            resource_manager = rlite.resman.RESMAN
         ResourceConsumer.__init__(self, resource_manager)
         self._executors: list[BaseExecutor] = []
 

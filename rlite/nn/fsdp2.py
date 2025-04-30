@@ -14,4 +14,4 @@ class Fsdp2TrainModule(BaseTrainModule, abc.ABC):
 
 
 class HuggingFaceFsdp2TrainModule(BaseHuggingFaceTrainModule, Fsdp2TrainModule, abc.ABC):
-    """Oone FSDP Module for Hugging Face models."""
+    """Rlite FSDP Module for Hugging Face models."""

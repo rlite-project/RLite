@@ -18,7 +18,7 @@ class FsdpTrainModule(BaseTrainModule, abc.ABC):
 
 
 class HuggingFaceFsdpTrainModule(BaseHuggingFaceTrainModule, FsdpTrainModule):
-    """Oone FSDP Module for Hugging Face models."""
+    """Rlite FSDP Module for Hugging Face models."""
 
     def get_fsdp_wrap_policy(self):
         if len(self.non_split_modules) == 0:

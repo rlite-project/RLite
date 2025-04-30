@@ -123,8 +123,8 @@ def iter_fsdp1_state_dict(model: FSDP | None = None, sharded_state_dict: dict | 
     # NOTE (zhanghan): We used ShardedTensor.gather and dist.broadcast, where
     #                  we assume the model's sharding process group is built
     #                  with dist.init_process_group and its replicate group
-    #                  is not. This is the default implementation in oone
-    #                  parallel, since oone_init_process_group will lead to
+    #                  is not. This is the default implementation in Rlite
+    #                  parallel, since Rlite_init_process_group will lead to
     #                  hanging when initializing the FSDP instance.
     if model is None and sharded_state_dict is None:
         raise ValueError("Either `model` or `sharded_state_dict` must be provided.")

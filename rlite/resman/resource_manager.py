@@ -32,14 +32,9 @@ class ResourceManager:
         self,
         *,
         master_addr: str | None = None,
-        dedup_logs: bool = True,
-        debug_mode: Literal["debugpy", "pdb"] = "debugpy",
-        use_post_mortem: bool = False,
     ):
         if self.is_initialized():
             return
-
-        self._setup_env(dedup_logs, debug_mode, use_post_mortem)
 
         # Handle if there is no GPU in the cluster
         if "GPU" not in ray.cluster_resources() or ray.cluster_resources()["GPU"] == 0:
@@ -377,27 +372,9 @@ class ResourceManager:
             )
         )
 
-    def _setup_env(self, dedup_logs: bool, debug_mode: str, use_post_mortem: bool):
-        import os
-
-        assert not ray.is_initialized(), "Let rlite initialize the ray!"
-
-        assert debug_mode in ["debugpy", "pdb"], f"Invalid debug mode: {debug_mode}"
-
-        ray_env = {"env_vars": {"RAY_DEDUP_LOGS": "0"}}
-
-        if debug_mode == "pdb":
-            os.environ["RAY_DEBUG"] = "legacy"
-            ray_env["env_vars"]["RAY_DEBUG"] = "legacy"
-            ray_env["env_vars"]["REMOTE_PDB_HOST"] = socket.gethostbyname(socket.gethostname())
-        if use_post_mortem:
-            os.environ["RAY_DEBUG_POST_MORTEM"] = "1"
-            ray_env["env_vars"]["RAY_DEBUG_POST_MORTEM"] = "1"
-        if dedup_logs:
-            ray_env["env_vars"]["RAY_DEDUP_LOGS"] = "1"
-
-        ray.init(runtime_env=ray_env)
-
     def __del__(self):
         if ray.is_initialized():
             ray.shutdown()
+
+
+RESMAN: ResourceManager | None = None

@@ -47,6 +47,12 @@ class VllmWorker(BaseWorker):
             max_model_len=max_model_len,
             **vllm_kwargs
         )
+        # NOTE: the GPU memory of vLLM is controlled by cuMemAllocator,
+        #       which bypasses the pytorch's memory allocator. So the device
+        #       of the model weight will always be cuda, even if the memory is
+        #       released. To address this issue, we manually record the current
+        #       device.
+        self._device = "cuda"
 
     def generate(
         self,
@@ -81,10 +87,12 @@ class VllmWorker(BaseWorker):
     def cpu(self):
         self.llm.sleep(level=1)
         self.release_memory_cache(gpu=True)
+        self._device = "cpu"
 
     def meta(self):
         self.llm.sleep(level=2)
         self.release_memory_cache(gpu=True)
+        self._device = "meta"
 
     def cuda(self, tags: str | list[str] | None = None):
         if tags is None:
@@ -95,10 +103,10 @@ class VllmWorker(BaseWorker):
             tags = set(tags)
 
         self.llm.wake_up(tags=tags)
+        self._device = "cuda"
 
     def get_device(self) -> str:
-        model = self.llm.llm_engine.model_executor.driver_worker.worker.model_runner.model
-        return model.device.type
+        return self._device
 
     def update_weight(self, key: str, value: torch.Tensor | CUDAIPCHandle | None = None):
         if key == "END":

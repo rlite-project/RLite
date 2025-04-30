@@ -8,7 +8,7 @@ from rlite.train.interface import TRAIN_EXECUTOR_REGISTRY, BaseTrainExecutor
 from rlite.train.utils import prepare_parallel_args, prepare_parallel_kwargs
 
 
-class OoneTrainEngine(BaseEngine):
+class RliteTrainEngine(BaseEngine):
     def __init__(
         self,
         module: BaseTrainModule,
