@@ -1,0 +1,28 @@
+[flake8]
+max-line-length = 99
+max-doc-length = 79
+
+ignore =
+    C901,
+    E231,  # missing whitespace after operator, which can be false in quotes
+    W504,  # Line break after a binary operator
+    W503  # Line break before a binary operator
+    E713
+
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    *.pyc,
+    venv
+    tools/collect_env.py
+
+max-complexity = 10
+max-locals = 15
+statistics = True
+show-source = True
+
+# ignore "import but not used" in __init__.py
+per-file-ignores =
+    __init__.py:F401
