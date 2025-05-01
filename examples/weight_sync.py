@@ -1,5 +1,5 @@
 from accelerate import init_empty_weights
-from transformers import Qwen2ForCausalLM
+from transformers import Qwen2Config, Qwen2ForCausalLM
 
 import rlite
 import rlite.nn
@@ -13,8 +13,7 @@ class MyModel(rlite.nn.HuggingFaceFsdp2TrainModule, Qwen2ForCausalLM):
 if __name__ == "__main__":
     rlite.init()
 
-    # model_name_or_path = "Qwen/Qwen2.5-7B-Instruct"
-    model_name_or_path = "/mnt/o1-reproduce/checkpoints/Qwen2.5-7B-Instruct"
+    model_name_or_path = "Qwen/Qwen2.5-7B-Instruct"
 
     vllm_engine = RliteInferenceEngine(model_name_or_path, executor="vllm")
     vllm_engine.build(tensor_parallel_size=4)
@@ -22,7 +21,8 @@ if __name__ == "__main__":
     vllm_engine.meta()  # Drop all the weights
 
     with init_empty_weights():
-        model = MyModel.from_pretrained(model_name_or_path)
+        config = Qwen2Config.from_pretrained(model_name_or_path)
+        model = MyModel(config)
 
     fsdp2_engine = RliteTrainEngine(model, executor="fsdp2")
     fsdp2_engine.build(tensor_parallel_size=8, colocate_with=vllm_engine)

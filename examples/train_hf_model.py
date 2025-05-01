@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 import torch.optim
 from accelerate import init_empty_weights
-from transformers import Qwen2ForCausalLM
+from transformers import Qwen2Config, Qwen2ForCausalLM
 
 import rlite
 import rlite.nn
@@ -34,10 +34,12 @@ if __name__ == "__main__":
     rlite.init()
 
     with init_empty_weights():  # Init on meta device
-        module = MyQwenModel.from_pretrained(
+        config = Qwen2Config.from_pretrained(
             "Qwen/Qwen2.5-7B-Instruct",
             attn_implementation="flash_attention_2"
         )
+        # NOTE: MyQwenModel.from_pretrained may read the checkpoint files
+        module = MyQwenModel(config)
         module.gradient_checkpointing_enable()
 
     engine = RliteTrainEngine(module, executor="fsdp2")  # Must on meta device
