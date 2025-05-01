@@ -56,7 +56,7 @@ First, import `rlite` as a common python package.
 ```python
 import rlite
 import rlite.nn
-from rlite import RliteInferenceEngine, RliteTrainEngine
+from rlite import RliteInferenceEngine, RliteTrainEngine, NeedParallel
 
 from transformers import Qwen2ForCausalLM
 ```
@@ -91,10 +91,10 @@ class MyQwenModel(rlite.nn.HuggingFaceFsdp2TrainModule, Qwen2ForCausalLM):
 
 Here we are subclassing the `Qwen2ForCausalLM` from `transformers` to reuse its forward implementation. We also subclass `rlite.nn.HuggingFaceFsdp2TrainModule`, which is basically a `torch.nn.Module` that further implements
 
-1. serialization of the module, so that this module can be send/receive using `ray`;
+1. serialization of the module, so that this module can be sent/received using `ray`;
 2. necessary interfaces (e.g., get the checkpoint path) for materializing and training the module on the cluster.
 
-> **_NOTE:_** In `rlite`, we use `rlite.nn.BaseTrainModule` as the carrier for user-defined logics. Such modules **must** be initialized on torch's meta device to ensure efficient module transfer between processes (i.e. ray actors). This enables algorithm-computation decoupling, allowing users to focus on algorithms only (writing `nn.Module`s). `rlite` will handle everything else.
+> **_NOTE:_** In `rlite`, we use `rlite.nn.xxxTrainModule` as the carrier for user-defined logics. Such modules **must** be initialized on torch's meta device to ensure efficient module transfer between processes (i.e. ray actors). This enables algorithm-computation decoupling, allowing users to focus on algorithms only (writing `nn.Module`s). `rlite` will handle everything else.
 
 > **_NOTE:_** `on_weights_materialized` is an important hook for operations that are expected to happen after the module is materialized on GPUs. For example, this is useful for optimizer and LR schedulers. You don't need to implement this hook if your module does not need to be optimized, e.g. reference model in PPO.
 
@@ -103,7 +103,7 @@ Here we are subclassing the `Qwen2ForCausalLM` from `transformers` to reuse its 
 Then, we initialize a vLLM actor and use it to generate rollouts.
 
 ```python
-vllm_engine = RliteInferenceEngine(model_name_or_path, executor="vllm")
+vllm_engine = RliteInferenceEngine("Qwen/Qwen2.5-7B-Instruct", executor="vllm")
 vllm_engine.build(tensor_parallel_size=4)
 
 prompts = ["你好，世界！", "Hello, world!"]
@@ -112,7 +112,7 @@ rollouts = vllm_engine.generate(prompts)
 
 ### 4. Initialize a FSDP2 actor for training
 
-After generation, we drop all the weights of this vLLM actor and initialize the train actor.
+After generation, we drop all the weights of this vLLM actor and initialize the train actor. Note that the module **must** be initialized on `meta` device to get a low-memory module instance.
 
 ```python
 vllm_engine.meta()  # Release everything from GPU
@@ -123,12 +123,14 @@ fsdp2_engine = RliteTrainEngine(module, engine="fsdp2")
 fsdp2_engine.build(tensor_parallel_size=4, colocate_with=vllm_engine)
 ```
 
+> **_NOTE:_** You can use `.cpu()`, `.cuda(*args, **kwargs)`, or `.meta()`, to move the engine to CPU, to GPU, or release all memory usage in both CPU and GPU.
+
 ### 5. Call the user-defined training logic
 
 Let's start training!
 
 ```python
-input_ids = [x.outputs[0].token_id for x in rollouts]
+input_ids = [x.outputs[0].token_ids for x in rollouts]
 grad_acc_steps = 4
 
 for _ in range(grad_acc_steps):
@@ -149,7 +151,7 @@ After training, sync the updated weights to vLLM actor and generate again.
 vllm_engine.cuda("weights")  # Only the weights are loaded
 fsdp2_engine.p2p_weight_sync(vllm_engine)  # GPU-to-GPU weight sync via CUDAIPC
 fsdp2_engine.cpu()
-vllm_engine.cuda("kv_cache")
+vllm_engine.cuda("kv_cache")  # The KV cache of vLLM is back to GPU
 ```
 
 That's all 🎉! Writing an RL program should be simple 😄! Check out the [examples](//examples/) for atomic usage examples and [recipes]() for complete examples that reproduce state-of-the-art RL results.
