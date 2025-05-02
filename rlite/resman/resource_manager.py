@@ -32,9 +32,12 @@ class ResourceManager:
         self,
         *,
         master_addr: str | None = None,
+        network_interface: str = "eth0",
     ):
         if self.is_initialized():
             return
+
+        self._network_interface = network_interface
 
         # Handle if there is no GPU in the cluster
         if "GPU" not in ray.cluster_resources() or ray.cluster_resources()["GPU"] == 0:
@@ -359,8 +362,19 @@ class ResourceManager:
         #                  so that the head node will always be the first one,
         #                  and the resource bundles on the same node will be
         #                  grouped together.
+        def _get_ip_addr_by_network_interface(network_interface: str) -> str:
+            import psutil
+            for interface, addrs in psutil.net_if_addrs().items():
+                for addr in addrs:
+                    if addr.family == 2 and interface == network_interface:
+                        return addr.address
+            raise ValueError(f"Network interface {network_interface} not found!")
+
         if master_addr is None:
-            master_addr = socket.gethostbyname(socket.gethostname())
+            try:
+                master_addr = _get_ip_addr_by_network_interface(self._network_interface)
+            except ValueError:
+                master_addr = socket.gethostbyname(socket.gethostname())
         for node in self.node_resource_info.values():
             if node["IP"] == master_addr:
                 head_node_id = node["NodeID"]

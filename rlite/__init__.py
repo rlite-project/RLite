@@ -5,6 +5,7 @@ from rlite.utils import NeedParallel
 
 
 def init(
+    network_interface: str = "eth0",
     dedup_logs: bool = False,
     debug_mode: str = "debugpy",
     debug_post_mortem: bool = False,
@@ -43,7 +44,7 @@ def init(
 
     import rlite.resman
 
-    rlite.resman.RESMAN = ResourceManager()
+    rlite.resman.RESMAN = ResourceManager(network_interface=network_interface)
 
 
 __all__ = [
