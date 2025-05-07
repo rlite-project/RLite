@@ -9,7 +9,6 @@ def init(
     dedup_logs: bool = False,
     debug_mode: str = "debugpy",
     debug_post_mortem: bool = False,
-    suppress_vllm_logging: bool = False,
 ):
     import os
     import socket
@@ -33,12 +32,6 @@ def init(
 
     if dedup_logs:
         ray_env["env_vars"]["RAY_DEDUP_LOGS"] = "1"
-
-    if suppress_vllm_logging:
-        os.environ["VLLM_CONFIGURE_LOGGING"] = "0"
-        os.environ["VLLM_LOGGING_LEVEL"] = "ERROR"
-        ray_env["env_vars"]["VLLM_CONFIGURE_LOGGING"] = "0"
-        ray_env["env_vars"]["VLLM_LOGGING_LEVEL"] = "ERROR"
 
     ray.init(runtime_env=ray_env)
 

@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import abc
+import os
 from functools import cached_property
+from pathlib import Path
 
 import torch
 
@@ -29,7 +31,31 @@ class BaseTrainModule(SerializableModule, abc.ABC):
 
 class BaseHuggingFaceTrainModule(BaseTrainModule):
     def materialization_source(self) -> str:
-        return self.config.name_or_path
+        """Always return an existing path in the file system."""
+
+        def get_latest_directory(directory: Path) -> Path | None:
+            if not directory.exists():
+                return None
+            directories = [d for d in directory.iterdir() if d.is_dir()]
+            if not directories:
+                return None
+            return max(directories, key=lambda d: d.stat().st_mtime)
+
+        if Path(self.config.name_or_path).exists():
+            return self.config.name_or_path
+
+        # Infer the default path for cache
+        default_cache_root = Path.home() / ".cache/huggingface"
+        cache_root = Path(os.getenv("HF_HOME", os.getenv("HF_HUB_CACHE", default_cache_root)))
+        cache_name = self.config.name_or_path.replace("/", "--")
+        cache_path = get_latest_directory(cache_root / f"models--{cache_name}" / "snapshots")
+        if cache_path is None:
+            from transformers import AutoConfig
+            _ = AutoConfig.from_pretrained(self.config.name_or_path)  # Download the model
+            cache_path = get_latest_directory(cache_root / f"models--{cache_name}" / "snapshots")
+            if cache_path is None:
+                raise ValueError(f"Failed to download the model from {self.config.name_or_path}")
+        return str(cache_path)
 
     @cached_property
     def non_split_modules(self) -> set[type[torch.nn.Module]]:

@@ -2,7 +2,7 @@ import rlite
 from rlite import RliteInferenceEngine
 
 if __name__ == "__main__":
-    rlite.init(suppress_vllm_logging=True)
+    rlite.init()
 
     model_name_or_path = "Qwen/Qwen2.5-7B-Instruct"
     prompts = [
