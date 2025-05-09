@@ -4,16 +4,6 @@
 
 ## Installation
 
-First, install `rlite` in your environment
-
-```
-pip install rlite
-```
-
-<details>
-
-<summary>or you can install <code>rlite</code> from source.</summary>
-
 We recommend using `conda` to manage our computation environment.
 
 1. Create a conda environment:
@@ -43,8 +33,6 @@ git clone https://github.com/rlite-project/RLite.git
 cd RLite; pip install -e .
 ```
 
-</details>
-
 ## Quick Start: Write an RL sketch in 10 minutes
 
 In this tutorial, we will use a simplified example to show you how to write an RL program with `rlite` in tens of lines, while still scales well.
@@ -54,11 +42,14 @@ In this tutorial, we will use a simplified example to show you how to write an R
 First, import `rlite` as a common python package.
 
 ```python
+import torch
+import torch.nn.functional as F
+from accelerate import init_empty_weights
+from transformers import Qwen2ForCausalLM
+
 import rlite
 import rlite.nn
-from rlite import RliteInferenceEngine, RliteTrainEngine, NeedParallel
-
-from transformers import Qwen2ForCausalLM
+from rlite import NeedParallel, RliteInferenceEngine, RliteTrainEngine
 ```
 
 ### 2. Define your `torch.nn.Module`
@@ -98,7 +89,15 @@ Here we are subclassing the `Qwen2ForCausalLM` from `transformers` to reuse its 
 
 > **_NOTE:_** `on_weights_materialized` is an important hook for operations that are expected to happen after the module is materialized on GPUs. For example, this is useful for optimizer and LR schedulers. You don't need to implement this hook if your module does not need to be optimized, e.g. reference model in PPO.
 
-### 3. Initialize a vLLM actor for inference
+### 3. Initialize `rlite`
+
+Call `rlite.init()` to config `rlite` globally and initialize the resource manager.
+
+```python
+rlite.init()
+```
+
+### 4. Initialize a vLLM actor for inference
 
 Then, we initialize a vLLM actor and use it to generate rollouts.
 
@@ -106,11 +105,11 @@ Then, we initialize a vLLM actor and use it to generate rollouts.
 vllm_engine = RliteInferenceEngine("Qwen/Qwen2.5-7B-Instruct", executor="vllm")
 vllm_engine.build(tensor_parallel_size=4)
 
-prompts = ["你好，世界！", "Hello, world!"]
+prompts = ["你好，世界！", "Hello, world!"] * 8
 rollouts = vllm_engine.generate(prompts)
 ```
 
-### 4. Initialize a FSDP2 actor for training
+### 5. Initialize a FSDP2 actor for training
 
 After generation, we drop all the weights of this vLLM actor and initialize the train actor. Note that the module **must** be initialized on `meta` device to get a low-memory module instance.
 
@@ -119,13 +118,13 @@ vllm_engine.meta()  # Release everything from GPU
 
 with init_empty_weights():
     module = MyQwenModel.from_pretrained("Qwen/Qwen2.5-7B-Instruct")
-fsdp2_engine = RliteTrainEngine(module, engine="fsdp2")
+fsdp2_engine = RliteTrainEngine(module, executor="fsdp2")
 fsdp2_engine.build(tensor_parallel_size=4, colocate_with=vllm_engine)
 ```
 
 > **_NOTE:_** You can use `.cpu()`, `.cuda(*args, **kwargs)`, or `.meta()`, to move the engine to CPU, to GPU, or release all memory usage in both CPU and GPU.
 
-### 5. Call the user-defined training logic
+### 6. Call the user-defined training logic
 
 Let's start training!
 
@@ -143,7 +142,7 @@ fsdp2_engine.optimizer_step()
 
 As you can see, you can call the function you just defined through the `RliteTrainEngine`. This gives the full flexibility to users to design new algorithms, without worrying about adapting them to `rlite`.
 
-### 6. Sync weight from FSDP2 actor to vLLM actor
+### 7. Sync weight from FSDP2 actor to vLLM actor
 
 After training, sync the updated weights to vLLM actor and generate again.
 
@@ -154,7 +153,7 @@ fsdp2_engine.cpu()
 vllm_engine.cuda("kv_cache")  # The KV cache of vLLM is back to GPU
 ```
 
-That's all 🎉! Writing an RL program should be simple 😄! Check out the [examples](//examples/) for atomic usage examples and [recipes]() for complete examples that reproduce state-of-the-art RL results.
+That's all 🎉! Writing an RL program should be simple 😄! Check out the [examples](https://github.com/rlite-project/RLite/tree/main/examples) for atomic usage examples and [recipes](https://github.com/rlite-project/RLite-Recipe) for complete examples that reproduce state-of-the-art RL results.
 
 ## Contributing
 
