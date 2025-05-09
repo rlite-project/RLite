@@ -1,3 +1,4 @@
+import rlite.third_party.transformers.monkey_patch
 from rlite.inference import RliteInferenceEngine
 from rlite.resman import ResourceManager
 from rlite.train import RliteTrainEngine

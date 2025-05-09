@@ -22,6 +22,9 @@ class RliteTrainEngine(BaseEngine):
         assert next(module.parameters()).is_meta, "Use meta model to initialize!"
         self._module = module
 
+        # Call the init_hook of the module
+        self._module.init_hook()
+
         if isinstance(executor, str):
             self._executor_cls = TRAIN_EXECUTOR_REGISTRY[executor]
         else:

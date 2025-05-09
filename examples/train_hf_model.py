@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
     with init_empty_weights():  # Init on meta device
         config = Qwen2Config.from_pretrained(
-            "Qwen/Qwen2.5-7B-Instruct",
+            "Qwen/Qwen2.5-1.5B-Instruct",
             attn_implementation="flash_attention_2"
         )
         # NOTE: MyQwenModel.from_pretrained may read the checkpoint files

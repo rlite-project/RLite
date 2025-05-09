@@ -11,6 +11,9 @@ from rlite.utils.distributed import SerializableModule
 
 
 class BaseTrainModule(SerializableModule, abc.ABC):
+    def init_hook(self):
+        """Hook that is called after the model is initialized."""
+
     def materialization_source(self) -> dict[str, torch.Tensor] | dict[str, callable] | str:
         """Materialization source.
 
@@ -30,8 +33,8 @@ class BaseTrainModule(SerializableModule, abc.ABC):
 
 
 class BaseHuggingFaceTrainModule(BaseTrainModule):
-    def materialization_source(self) -> str:
-        """Always return an existing path in the file system."""
+    def init_hook(self):
+        """Infer the materialization source."""
 
         def get_latest_directory(directory: Path) -> Path | None:
             if not directory.exists():
@@ -42,20 +45,28 @@ class BaseHuggingFaceTrainModule(BaseTrainModule):
             return max(directories, key=lambda d: d.stat().st_mtime)
 
         if Path(self.config.name_or_path).exists():
-            return self.config.name_or_path
+            self._materialization_source = self.config.name_or_path
+            return
 
         # Infer the default path for cache
-        default_cache_root = Path.home() / ".cache/huggingface"
+        default_cache_root = Path.home() / ".cache/huggingface/hub"
         cache_root = Path(os.getenv("HF_HOME", os.getenv("HF_HUB_CACHE", default_cache_root)))
         cache_name = self.config.name_or_path.replace("/", "--")
         cache_path = get_latest_directory(cache_root / f"models--{cache_name}" / "snapshots")
-        if cache_path is None:
-            from transformers import AutoConfig
-            _ = AutoConfig.from_pretrained(self.config.name_or_path)  # Download the model
+
+        # Download if no safetensors found (TODO: support other formats)
+        if len(list(cache_path.glob("*.safetensors"))) == 0:  # No safetensors found, download
+            import huggingface_hub
+            huggingface_hub.snapshot_download(self.config.name_or_path)
             cache_path = get_latest_directory(cache_root / f"models--{cache_name}" / "snapshots")
             if cache_path is None:
                 raise ValueError(f"Failed to download the model from {self.config.name_or_path}")
-        return str(cache_path)
+
+        self._materialization_source = str(cache_path)
+
+    def materialization_source(self) -> str:
+        """Always return an existing path in the file system."""
+        return self._materialization_source
 
     @cached_property
     def non_split_modules(self) -> set[type[torch.nn.Module]]:
