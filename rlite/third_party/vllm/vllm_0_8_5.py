@@ -2,7 +2,6 @@ from typing import Optional, Sequence, Union, cast
 
 from tqdm import tqdm
 from vllm import LLM as BaseLLM
-from vllm.executor.uniproc_executor import ExecutorWithExternalLauncher
 from vllm.inputs import PromptType
 from vllm.model_executor.guided_decoding.guided_fields import (
     GuidedDecodingRequest
@@ -117,12 +116,3 @@ class LLM(BaseLLM):
         # This is necessary because some requests may be finished earlier than
         # its previous requests.
         return sorted(outputs, key=lambda x: int(x.request_id))
-
-    def sleep(self, level: int = 1):
-        assert isinstance(self.llm_engine.model_executor, ExecutorWithExternalLauncher), \
-            "In Rlite parallel, we only support ExecutorWithExternalLauncher!"
-        self.reset_prefix_cache()
-        self.llm_engine.sleep(level=level)
-
-    def wake_up(self, *args, **kwargs):
-        self.llm_engine.wake_up(*args, **kwargs)
