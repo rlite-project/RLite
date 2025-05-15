@@ -10,8 +10,8 @@ import torch.nn as nn
 from torch.distributed.device_mesh import DeviceMesh
 
 from rlite.interface import BaseWorker
+from rlite.interface.train import BaseTrainWorker
 from rlite.nn import Fsdp2TrainModule
-from rlite.train.interface import BaseTrainWorker
 from rlite.train.utils.fsdp import offload_optimizer, reload_optimizer
 from rlite.utils.checkpoint import load_safetensors_generator, save_safetensors
 from rlite.utils.distributed import CUDAIPCHandle

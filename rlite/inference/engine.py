@@ -4,11 +4,11 @@ import ray
 from loguru import logger
 from vllm import RequestOutput, SamplingParams
 
-from rlite.inference.interface.inference_executor import (
+from rlite.interface.base_engine import BaseEngine, abort_if_no_executor
+from rlite.interface.inference.inference_executor import (
     INFERENCE_EXECUTOR_REGISTRY,
     BaseInferenceExecutor
 )
-from rlite.interface.base_engine import BaseEngine, abort_if_no_executor
 from rlite.nn.inference_module import BaseInferenceModule
 from rlite.utils.need_parallel import NeedParallel
 

@@ -3,8 +3,8 @@ from __future__ import annotations
 import ray
 
 from rlite.interface.base_engine import BaseEngine, abort_if_no_executor
+from rlite.interface.train import TRAIN_EXECUTOR_REGISTRY, BaseTrainExecutor
 from rlite.nn import BaseTrainModule
-from rlite.train.interface import TRAIN_EXECUTOR_REGISTRY, BaseTrainExecutor
 from rlite.train.utils import prepare_parallel_args, prepare_parallel_kwargs
 
 

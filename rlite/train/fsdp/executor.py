@@ -1,10 +1,10 @@
-from rlite.nn.fsdp import FsdpTrainModule
-from rlite.resman import ResourceBundle
-from rlite.train.fsdp.worker import FsdpWorker
-from rlite.train.interface.train_executor import (
+from rlite.interface.train.train_executor import (
     TRAIN_EXECUTOR_REGISTRY,
     BaseTrainExecutor
 )
+from rlite.nn.fsdp import FsdpTrainModule
+from rlite.resman import ResourceBundle
+from rlite.train.fsdp.worker import FsdpWorker
 from rlite.utils.misc import set_random_seed
 
 

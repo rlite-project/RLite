@@ -20,8 +20,8 @@ from torch.distributed.fsdp import (
 )
 
 from rlite.interface import BaseWorker
+from rlite.interface.train import BaseTrainWorker
 from rlite.nn.fsdp import FsdpTrainModule
-from rlite.train.interface import BaseTrainWorker
 from rlite.train.utils.fsdp import (
     iter_fsdp1_state_dict,
     offload_model,

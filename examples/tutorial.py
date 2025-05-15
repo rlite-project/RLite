@@ -46,12 +46,12 @@ if __name__ == "__main__":
     fsdp2_engine = RliteTrainEngine(module, executor="fsdp2")
     fsdp2_engine.build(tensor_parallel_size=4, colocate_with=vllm_engine)
 
-    input_ids = [x.outputs[0].token_ids for x in rollouts]
+    input_ids = [[x.outputs[0].token_ids for x in rollouts] for _ in range(4)]
     grad_acc_steps = 4
 
-    for _ in range(grad_acc_steps):
+    for step in range(grad_acc_steps):
         fsdp2_engine.train_step(
-            NeedParallel(input_ids),  # This will be split among the workers (DP)
+            NeedParallel(input_ids[step]),  # This will be split among the workers (DP)
             grad_acc_steps  # This will be copied to all workers
         )
     fsdp2_engine.optimizer_step()

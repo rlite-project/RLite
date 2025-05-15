@@ -1,8 +1,8 @@
-from rlite.inference.interface.inference_executor import (
+from rlite.interface.inference.inference_executor import (
     INFERENCE_EXECUTOR_REGISTRY,
     BaseInferenceExecutor
 )
-from rlite.inference.interface.inference_worker import BaseWorker
+from rlite.interface.inference.inference_worker import BaseWorker
 from rlite.nn.inference_module import BaseInferenceModule
 
 __all__ = [

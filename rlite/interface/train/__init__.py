@@ -1,8 +1,8 @@
-from rlite.train.interface.train_executor import (
+from rlite.interface.train.train_executor import (
     TRAIN_EXECUTOR_REGISTRY,
     BaseTrainExecutor
 )
-from rlite.train.interface.train_worker import BaseTrainWorker
+from rlite.interface.train.train_worker import BaseTrainWorker
 
 __all__ = [
     "TRAIN_EXECUTOR_REGISTRY",

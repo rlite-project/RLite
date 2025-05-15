@@ -1,7 +1,7 @@
 import torch
 from vllm import RequestOutput, SamplingParams
 
-from rlite.inference.interface.inference_worker import BaseWorker
+from rlite.interface.inference.inference_worker import BaseWorker
 from rlite.third_party.vllm import LLM
 from rlite.utils.distributed import CUDAIPCHandle
 

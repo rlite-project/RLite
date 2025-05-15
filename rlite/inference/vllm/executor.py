@@ -1,11 +1,11 @@
 import ray
 from vllm import SamplingParams
 
-from rlite.inference.interface.inference_executor import (
+from rlite.inference.vllm.worker import VllmWorker
+from rlite.interface.inference.inference_executor import (
     INFERENCE_EXECUTOR_REGISTRY,
     BaseInferenceExecutor
 )
-from rlite.inference.vllm.worker import VllmWorker
 from rlite.resman import ResourceBundle
 from rlite.utils.misc import set_random_seed
 

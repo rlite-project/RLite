@@ -1,12 +1,12 @@
 import abc
 
-from rlite.nn import Fsdp2TrainModule
-from rlite.resman import ResourceBundle
-from rlite.train.fsdp2.worker import Fsdp2Worker
-from rlite.train.interface.train_executor import (
+from rlite.interface.train.train_executor import (
     TRAIN_EXECUTOR_REGISTRY,
     BaseTrainExecutor
 )
+from rlite.nn import Fsdp2TrainModule
+from rlite.resman import ResourceBundle
+from rlite.train.fsdp2.worker import Fsdp2Worker
 from rlite.utils.misc import set_random_seed
 
 

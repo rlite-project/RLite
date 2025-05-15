@@ -6,7 +6,10 @@ def patch_from_pretrained(cls):
 
     def new_from_pretrained(cls, pretrained_model_name_or_path, *args, **kwargs):
         config = orig_from_pretrained(pretrained_model_name_or_path, *args, **kwargs)
-        config.name_or_path = pretrained_model_name_or_path
+        if isinstance(config, tuple):
+            config[0].name_or_path = pretrained_model_name_or_path
+        else:
+            config.name_or_path = pretrained_model_name_or_path
         return config
 
     cls.from_pretrained = classmethod(new_from_pretrained)
