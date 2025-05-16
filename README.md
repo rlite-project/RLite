@@ -160,6 +160,10 @@ That's all 🎉! Writing an RL program should be simple 😄! Check out the [exa
 <details>
 <summary>Developer's guide.</summary>
 
+<br>
+
+> Write code that you would like to read again.
+
 We use `pre-commit` and `git cz` to sanitize the commits. You can run `pre-commit` before `git cz` to avoid repeatedly input the commit messages.
 
 ```bash

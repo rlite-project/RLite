@@ -18,7 +18,7 @@ class RliteTrainEngine(BaseEngine):
     ):
         super().__init__(**kwargs)
 
-        assert isinstance(module, BaseTrainModule)
+        # assert isinstance(module, BaseTrainModule)
         assert next(module.parameters()).is_meta, "Use meta model to initialize!"
         self._module = module
 

@@ -29,7 +29,7 @@ class Fsdp2TrainExecutor(BaseTrainExecutor, abc.ABC):
         mesh_shape: tuple[int, ...],
         **fsdp_kwargs
     ):
-        assert isinstance(module, Fsdp2TrainModule), type(module)
+        # assert isinstance(module, Fsdp2TrainModule), type(module)
         self.dp_rank = dp_rank
         self.module = module
         self.bundles = bundles

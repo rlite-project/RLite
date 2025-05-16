@@ -54,10 +54,10 @@ class Fsdp2Worker(BaseTrainWorker):
         shard_group_world_size: int,
         **kwargs,
     ):
-        self._module_cls = module.__class__
+        self.module = module.float()
         self.rank_in_shard_group = rank_in_shard_group
         self.shard_group_world_size = shard_group_world_size
-        self._init_model(module, mesh_shape)
+        self._init_model(self.module, mesh_shape)
 
     def __getattr__(self, name):
         if name == "model":
@@ -70,8 +70,8 @@ class Fsdp2Worker(BaseTrainWorker):
             try:
                 return nn.Module.__getattr__(model, name)
             except AttributeError:
-                if hasattr(self._module_cls, name):
-                    attr = getattr(self._module_cls, name)
+                if hasattr(self.module, name):
+                    attr = getattr(self.module, name)
                     if callable(attr):
                         return capture_forward_error(attr.__get__(model))
                 raise
@@ -131,11 +131,13 @@ class Fsdp2Worker(BaseTrainWorker):
             return full_state_dict
 
     @abort_if_not_cuda
-    def load_state_dict(self, state_dict: dict | Generator):
+    def load_state_dict(self, state_dict: dict | Generator, preprocess_fn: callable = None):
         if isinstance(state_dict, dict):
             state_dict = state_dict.items()
 
         for key, value in state_dict:
+            if preprocess_fn is not None:
+                key, value = preprocess_fn(key, value)
             chunked_value = torch.chunk(
                 value, self.shard_group_world_size, dim=0
             )[self.rank_in_shard_group]
@@ -146,14 +148,14 @@ class Fsdp2Worker(BaseTrainWorker):
         save_safetensors(checkpoint_path, self._full_param_iterator())
 
     @abort_if_not_cuda
-    def load(self, checkpoint_path: str):
+    def load(self, checkpoint_path: str, preprocess_fn: callable = None):
         state_dict_iterator = load_safetensors_generator(
             checkpoint_path,
             device="cuda",
             use_tqdm=self.rank_in_shard_group == 0,
             dtype=torch.bfloat16
         )
-        self.load_state_dict(state_dict_iterator)
+        self.load_state_dict(state_dict_iterator, preprocess_fn)
 
     # Private methods
 
@@ -170,16 +172,22 @@ class Fsdp2Worker(BaseTrainWorker):
         for name, buffer in self.model.named_buffers():
             buffer.data.copy_(named_buffers[name])
 
+        # Rebind the attributes
+        for key, value in module.__dict__.items():
+            if not key.startswith("_") and not hasattr(self.model, key):
+                setattr(self.model, key, value)
+
         mat_src = module.materialization_source()
         if isinstance(mat_src, str):
-            self.load(mat_src)
+            self.load(mat_src, module.preprocess_materialization_source.__get__(self.model))
         elif isinstance(mat_src, dict):
             raise NotImplementedError("Currently not implemented, coming soon.")
         else:
             raise ValueError(f"Unknown materialization source: {mat_src}")
 
-        if hasattr(self._module_cls, "on_weights_materialized"):
-            self._module_cls.on_weights_materialized(self.model)
+        # Call the on_weights_materialized hook if it exists
+        if hasattr(self.module, "on_weights_materialized"):
+            self.module.on_weights_materialized.__get__(self.model)()
 
     def _init_device_mesh(self, mesh_shape: tuple[int, ...]):
         from torch.distributed.device_mesh import init_device_mesh

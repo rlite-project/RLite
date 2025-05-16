@@ -12,7 +12,7 @@ from rlite.utils.distributed import SerializableModule
 
 class BaseTrainModule(SerializableModule, abc.ABC):
     def init_hook(self):
-        """Hook that is called after the model is initialized."""
+        """Hook that is called after the model is bind to the engine."""
 
     def materialization_source(self) -> dict[str, torch.Tensor] | dict[str, callable] | str:
         """Materialization source.
@@ -31,10 +31,18 @@ class BaseTrainModule(SerializableModule, abc.ABC):
         weights are materialized on the GPU.
         """
 
+    def preprocess_materialization_source(
+        self,
+        name: str,
+        param: torch.Tensor
+    ) -> tuple[str, torch.Tensor]:
+        """Preprocess the materialization source (i.e., the state dict)."""
+        return name, param  # By default, do nothing.
+
 
 class BaseHuggingFaceTrainModule(BaseTrainModule):
     def init_hook(self):
-        """Infer the materialization source."""
+        """Infer the materialization source and download weights if needed."""
 
         def get_latest_directory(directory: Path) -> Path | None:
             if not directory.exists():
