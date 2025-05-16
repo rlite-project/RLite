@@ -106,7 +106,9 @@ class Fsdp2Worker(BaseTrainWorker):
     @abort_if_not_cuda
     def sync_weights_to(self, target_worker: ray.ActorHandle[BaseWorker]):
         for key, param in self._named_parameters.items():
-            ipc_handle = CUDAIPCHandle.from_tensor(param.full_tensor())
+            postprocess_fn = self.module.postprocess_output_named_parameters.__get__(self.model)
+            key, param = postprocess_fn(key, param, self._named_parameters)
+            ipc_handle = CUDAIPCHandle.from_tensor(param)
             future = target_worker.update_weight.remote(key, ipc_handle)
             ray.get(future)
 
@@ -118,26 +120,33 @@ class Fsdp2Worker(BaseTrainWorker):
             return
         if isinstance(weight, CUDAIPCHandle):
             weight = weight.rebuild()
+        preprocess_fn = self.module.preprocess_input_named_parameters.__get__(self.model)
+        key, weight = preprocess_fn(key, weight)
         self._named_parameters[key]._local_tensor.data.copy_(weight)
 
     @abort_if_not_cuda
     def state_dict(self) -> dict:
         local_state_dict = self.model.state_dict()
-        full_state_dict = {
-            key: value.full_tensor().cpu()
+        postprocess_fn = self.module.postprocess_output_named_parameters.__get__(self.model)
+        full_state_dict = dict([
+            postprocess_fn(key, value, local_state_dict)
             for key, value in local_state_dict.items()
-        }
+        ])
         if dist.get_rank() == 0:
             return full_state_dict
 
     @abort_if_not_cuda
-    def load_state_dict(self, state_dict: dict | Generator, preprocess_fn: callable = None):
+    def load_state_dict(self, state_dict: dict | Generator):
         if isinstance(state_dict, dict):
             state_dict = state_dict.items()
 
         for key, value in state_dict:
-            if preprocess_fn is not None:
-                key, value = preprocess_fn(key, value)
+
+            # Apply the preprocess function
+            preprocess_fn = self.module.preprocess_input_named_parameters.__get__(self.model)
+            key, value = preprocess_fn(key, value)
+
+            # Chunk and load the weights
             chunked_value = torch.chunk(
                 value, self.shard_group_world_size, dim=0
             )[self.rank_in_shard_group]
@@ -145,17 +154,21 @@ class Fsdp2Worker(BaseTrainWorker):
 
     @abort_if_not_cuda
     def save(self, checkpoint_path: str):
-        save_safetensors(checkpoint_path, self._full_param_iterator())
+        def _param_iterator():
+            post_process_fn = self.module.postprocess_output_named_parameters.__get__(self.model)
+            for name, param in self._named_parameters.items():
+                yield post_process_fn(name, param, self._named_parameters)
+        save_safetensors(_param_iterator(), checkpoint_path)
 
     @abort_if_not_cuda
-    def load(self, checkpoint_path: str, preprocess_fn: callable = None):
+    def load(self, checkpoint_path: str):
         state_dict_iterator = load_safetensors_generator(
             checkpoint_path,
             device="cuda",
             use_tqdm=self.rank_in_shard_group == 0,
             dtype=torch.bfloat16
         )
-        self.load_state_dict(state_dict_iterator, preprocess_fn)
+        self.load_state_dict(state_dict_iterator)
 
     # Private methods
 
@@ -179,7 +192,7 @@ class Fsdp2Worker(BaseTrainWorker):
 
         mat_src = module.materialization_source()
         if isinstance(mat_src, str):
-            self.load(mat_src, module.preprocess_materialization_source.__get__(self.model))
+            self.load(mat_src)
         elif isinstance(mat_src, dict):
             raise NotImplementedError("Currently not implemented, coming soon.")
         else:
@@ -215,10 +228,6 @@ class Fsdp2Worker(BaseTrainWorker):
     @cached_property
     def _named_parameters(self):
         return dict(self.model.named_parameters())
-
-    def _full_param_iterator(self):
-        for name, param in self._named_parameters.items():
-            yield name, param.full_tensor()
 
     def __del__(self):
         if dist.is_initialized():

@@ -12,7 +12,23 @@ MODE = "lora"
 
 class ModelForTest(rlite.nn.HuggingFaceFsdp2TrainModule, Qwen2ForCausalLM):
     def on_weights_materialized(self):
+        self._init_lora_B_as_zeros()
         self.optimizer = torch.optim.AdamW(self.parameters(), lr=1e-5)
+
+    def preprocess_input_named_parameters(self, name: str, param: torch.Tensor):
+        if not hasattr(self, "weight_mapping"):
+            raise ValueError("weight_mapping is not set")
+        if name in self.weight_mapping:
+            name = self.weight_mapping[name]
+        return name, param
+
+    # Custom functions go below.
+
+    def _init_lora_B_as_zeros(self):
+        with torch.no_grad():
+            for name, param in self.named_parameters():
+                if "lora_B" in name:
+                    param.zero_()
 
     def get_memory_usage(self):
         torch.cuda.empty_cache()
@@ -25,13 +41,6 @@ class ModelForTest(rlite.nn.HuggingFaceFsdp2TrainModule, Qwen2ForCausalLM):
         loss.backward()
         self.optimizer.step()
         print(f"{MODE} mode: After running", self.get_memory_usage())
-
-    def preprocess_materialization_source(self, name: str, param: torch.Tensor):
-        if not hasattr(self, "weight_mapping"):
-            raise ValueError("weight_mapping is not set")
-        if name in self.weight_mapping:
-            name = self.weight_mapping[name]
-        return name, param
 
 
 class LoraTest:
@@ -73,6 +82,7 @@ class LoraTest:
         return key.replace("base_layer.", "").replace("base_model.model.", "")
 
     def _apply_lora(self, model):
+        # NOTE: rlite itself does not depend on peft. Install it separately.
         from peft import LoraConfig, TaskType, get_peft_model
 
         peft_config = LoraConfig(

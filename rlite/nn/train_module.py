@@ -12,7 +12,11 @@ from rlite.utils.distributed import SerializableModule
 
 class BaseTrainModule(SerializableModule, abc.ABC):
     def init_hook(self):
-        """Hook that is called after the model is bind to the engine."""
+        """
+        Hook that is called to transform the model before it is bind to the
+        engine.
+        """
+        return self
 
     def materialization_source(self) -> dict[str, torch.Tensor] | dict[str, callable] | str:
         """Materialization source.
@@ -31,12 +35,32 @@ class BaseTrainModule(SerializableModule, abc.ABC):
         weights are materialized on the GPU.
         """
 
-    def preprocess_materialization_source(
+    def preprocess_input_named_parameters(
         self,
         name: str,
         param: torch.Tensor
+        # NOTE: should we support the full state dict in this function?
     ) -> tuple[str, torch.Tensor]:
-        """Preprocess the materialization source (i.e., the state dict)."""
+        """Preprocess the input named parameters.
+
+        This function is called whenever the model loads weight from outside.
+        Examples include loading checkpoints from the file system or receiving
+        weight from other workers.
+        """
+        return name, param  # By default, do nothing.
+
+    def postprocess_output_named_parameters(
+        self,
+        name: str,
+        param: torch.Tensor,
+        full_state_dict: dict[str, torch.Tensor]
+    ) -> tuple[str, torch.Tensor]:
+        """Postprocess the output named parameters.
+
+        This function is called whenever the model saves weight to outside.
+        Examples include saving checkpoints to the file system or sending
+        weights to other workers.
+        """
         return name, param  # By default, do nothing.
 
 

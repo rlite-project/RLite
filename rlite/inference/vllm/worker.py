@@ -117,7 +117,11 @@ class VllmWorker(BaseWorker):
         if isinstance(value, CUDAIPCHandle):
             value = value.rebuild()
 
-        model.load_weights(weights=[(key, value)])
+        try:
+            model.load_weights(weights=[(key, value)])
+        except KeyError:
+            # Ignore the unrecognized weights.
+            pass
 
     def load_state_dict(self, state_dict: dict):
         model = self.llm.llm_engine.model_executor.driver_worker.worker.model_runner.model
