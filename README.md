@@ -3,10 +3,10 @@
 <img alt="RLite" src="assets/logo/row_text_light.png" width="300px">
 
 <p align="center">
-  <a href="#quick-start" style="margin: 0 10px;">Quick start</a> •
-  <a href="https://github.com/rlite-project/RLite/tree/main/examples">Examples</a> •
-  <a href="https://github.com/rlite-project/RLite-Recipe">Recipes</a> •
-  <a href="#">Docs</a>
+  <a href="https://rlite-documentation.readthedocs.io/en/latest/quick_start.html" style="margin: 0 10px;">🚀 Quick start</a> •
+  <a href="https://github.com/rlite-project/RLite/tree/main/examples">🌰 Examples</a> •
+  <a href="https://github.com/rlite-project/RLite-Recipe">🍲 Recipes</a> •
+  <a href="https://rlite-documentation.readthedocs.io/en/latest/">📚 Docs</a>
 </p>
 
 A lightweight RL framework with PyTorch-like interfaces.
@@ -66,9 +66,15 @@ cd RLite; pip install -e .
 
 We use [recipes](https://github.com/rlite-project/RLite-Recipe) as examples for reproducing SOTA RL methods. Featured recipes
 
-- [Vanilla GRPO]()
-- [LoRA GRPO]()
-- [Reproduction of Open-Reasoner-Zero]()
+- [Vanilla GRPO](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/on_policy_grpo_math_verifiable_reward)
+- [LoRA GRPO](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/grpo_lora)
+- [Reproduction of Open-Reasoner-Zero](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/reproduce_orz)
+
+## Programming Model
+
+![Programming Model](assets/docs/source/intrudoction/program_model.jpg)
+
+In RLite, users mainly work with **Engine**s, which is a handler that takes the input from the main process, organizes the tasks and sends to the workers. The engine may have multiple **Executor**s, each holding a full set of model weights. Both Engines and Executors reside in the main process. The **Worker**s are the units that actually perform computational tasks, with each Worker corresponding to a GPU. Conversely, a single GPU can be associated with multiple Workers, which can use the GPU in a time-multiplexed manner.
 
 ## Key Interfaces
 

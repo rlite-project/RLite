@@ -2,14 +2,12 @@
 
 # -- Project information
 
-from rlite import __version__
-
 project = 'RLite'
-copyright = '2025, Han Zhang'
+copyright = '2025, RLite Project'
 author = 'Han Zhang'
 
-release = __version__
-version = __version__
+release = "0.1.0"
+version = "0.1.0"
 
 # -- General configuration
 

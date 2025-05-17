@@ -55,7 +55,7 @@ Here we are subclassing the ``Qwen2ForCausalLM`` from ``transformers`` to reuse 
 
 .. note ::
 
-    In ``rlite``, we use ``rlite.nn.xxxTrainModule`` as the carrier for user-defined logics. Such modules **must** be initialized on torch's meta device to ensure efficient module transfer between processes (i.e. ray actors). This enables algorithm-computation decoupling, allowing users to focus on algorithms only (writing ``nn.Module``s). ``rlite`` will handle everything else.
+    In ``rlite``, we use ``rlite.nn.xxxTrainModule`` as the carrier for user-defined logics. Such modules **must** be initialized on torch's meta device to ensure efficient module transfer between processes (i.e. ray actors). This enables algorithm-computation decoupling, allowing users to focus on algorithms only (writing ``nn.Module``s). RLite will handle everything else.
 
 .. note::
 
@@ -80,8 +80,8 @@ Then, we initialize a vLLM actor and use it to generate rollouts.
     vllm_engine = RliteInferenceEngine("Qwen/Qwen2.5-7B-Instruct", executor="vllm")
     vllm_engine.build(tensor_parallel_size=4)
 
-prompts = ["你好，世界！", "Hello, world!"] * 8
-rollouts = vllm_engine.generate(prompts)
+    prompts = ["你好，世界！", "Hello, world!"] * 8
+    rollouts = vllm_engine.generate(prompts)
 
 5. Initialize a FSDP2 actor for training
 ----------------------------------------
@@ -132,4 +132,4 @@ After training, sync the updated weights to vLLM actor and generate again.
     fsdp2_engine.cpu()
     vllm_engine.cuda("kv_cache")  # The KV cache of vLLM is back to GPU
 
-That's all 🎉! Writing an RL program should be this simple 😄! The full example can be found `here <https://github.com/rlite-project/RLite/blob/main/examples/tutorial.py>`_.
+That's all 🎉! Writing an RL program should be this simple 😄! The complete code of this tutorial can be found `here <https://github.com/rlite-project/RLite/blob/main/examples/tutorial.py>`_.
