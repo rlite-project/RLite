@@ -13,5 +13,5 @@ Contents
    interfaces
    inference
    train
-   cluster
    debug
+   faq
