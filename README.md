@@ -6,7 +6,7 @@
   <a href="#quick-start" style="margin: 0 10px;">Quick start</a> •
   <a href="https://github.com/rlite-project/RLite/tree/main/examples">Examples</a> •
   <a href="https://github.com/rlite-project/RLite-Recipe">Recipes</a> •
-  <a href="#">Docs</a>
+  <a href="https://rlite-documentation.readthedocs.io/en/latest/">Docs</a>
 </p>
 
 A lightweight RL framework with PyTorch-like interfaces.
@@ -66,9 +66,9 @@ cd RLite; pip install -e .
 
 We use [recipes](https://github.com/rlite-project/RLite-Recipe) as examples for reproducing SOTA RL methods. Featured recipes
 
-- [Vanilla GRPO]()
-- [LoRA GRPO]()
-- [Reproduction of Open-Reasoner-Zero]()
+- [Vanilla GRPO](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/on_policy_grpo_math_verifiable_reward)
+- [LoRA GRPO](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/grpo_lora)
+- [Reproduction of Open-Reasoner-Zero](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/reproduce_orz)
 
 ## Key Interfaces
 

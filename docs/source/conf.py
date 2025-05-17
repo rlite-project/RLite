@@ -3,7 +3,7 @@
 # -- Project information
 
 project = 'RLite'
-copyright = '2025, Han Zhang'
+copyright = '2025, RLite Project'
 author = 'Han Zhang'
 
 release = "0.1.0"
