@@ -1,6 +1,6 @@
 <div align="center">
 
-<img alt="RLite" src="assets/logo/row_text_light.png" width="200px" height="80px" style="max-width:200px; object-fit: cover; object-position: center;">
+<img alt="RLite" src="assets/logo/row_text_light.png" width="300px">
 
 <p align="center">
   <a href="#quick-start" style="margin: 0 10px;">Quick start</a> •
@@ -19,10 +19,7 @@ A lightweight RL framework with PyTorch-like interfaces.
 - `vLLM` support for inference.
 - `ray` support for resource management.
 - Easy to learn and use. Most interfaces are kept the same as Torch, with parallel engine working seamlessly behind the scenes.
-- [Recipes](https://github.com/rlite-project/RLite-Recipe) that reproduce SOTA results with one self-contained python script. Examples:
-  - Reproduction of Open-Reasoner-Zero ([recipe](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/reproduce_orz)).
-  - Training Qwen2.5-7B with GRPO and LoRA ([recipe](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/grpo_lora)).
-  - RLVR with GRPO ([recipe](https://github.com/rlite-project/RLite-Recipe/tree/main/recipe/on_policy_grpo_math_verifiable_reward)).
+- [Recipes](https://github.com/rlite-project/RLite-Recipe) that reproduce SOTA results with a single self-contained python script.
 
 ## Installation
 
