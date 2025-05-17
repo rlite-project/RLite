@@ -10,7 +10,9 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-    { name = "Han Zhang", email = "zh950713@gmail.com" }
+    { name = "Han Zhang", email = "zh950713@gmail.com" },
+    { name = "Jingcheng Hu", email = "hujc22@mails.tsinghua.edu.cn" },
+    { name = "Zane Li", email = "zengarden2009@gmail.com" },
 ]
 dependencies = [
     "accelerate>=0.26.0",
@@ -31,6 +33,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+
 dev = [
     "pytest>=7.0",
     "pytest-cov>=3.0",
