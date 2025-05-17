@@ -10,6 +10,7 @@ Contents
 
    quick_start
    introduction
+   inference
    train
    resman
    debug
