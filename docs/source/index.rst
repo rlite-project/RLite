@@ -1,11 +1,17 @@
 Welcome to RLite's documentation!
 =================================
 
+RLite is a lightweight and efficient framework for training and inference of large language models. It is designed to be simple, flexible, and scalable. To minimize the learning overhead, RLite is built on top of PyTorch and HuggingFace Transformers, keeping as similar interfaces as possible.
 
 Contents
 ========
 
 .. toctree::
-   :maxdepth: 2
 
    quick_start
+   introduction
+   interfaces
+   inference
+   train
+   cluster
+   debug
