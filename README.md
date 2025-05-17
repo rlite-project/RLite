@@ -3,10 +3,10 @@
 <img alt="RLite" src="assets/logo/row_text_light.png" width="300px">
 
 <p align="center">
-  <a href="https://rlite-documentation.readthedocs.io/en/latest/quick_start.html" style="margin: 0 10px;">Quick start</a> •
-  <a href="https://github.com/rlite-project/RLite/tree/main/examples">Examples</a> •
-  <a href="https://github.com/rlite-project/RLite-Recipe">Recipes</a> •
-  <a href="https://rlite-documentation.readthedocs.io/en/latest/">Docs</a>
+  <a href="https://rlite-documentation.readthedocs.io/en/latest/quick_start.html" style="margin: 0 10px;">🚀 Quick start</a> •
+  <a href="https://github.com/rlite-project/RLite/tree/main/examples">🌰 Examples</a> •
+  <a href="https://github.com/rlite-project/RLite-Recipe">🍲 Recipes</a> •
+  <a href="https://rlite-documentation.readthedocs.io/en/latest/">📚 Docs</a>
 </p>
 
 A lightweight RL framework with PyTorch-like interfaces.
