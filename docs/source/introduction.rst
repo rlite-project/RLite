@@ -33,7 +33,7 @@ Global Configuration and Resource Management
 
 The ``rlite.init()`` function provides global configuration and resource management capabilities. It will attach/initialize the Ray cluster for distributed training and inference.
 
-Users can use this interface to configure the resources used for the entire training process and the underlying engine settings. Refer to :doc:`rlite_init` for more details.
+Users can use this interface to configure the resources used for the entire training process and the underlying engine settings. Refer to :doc:`rlite.init <rlite_init>` for more details.
 
 Inference Interface
 ^^^^^^^^^^^^^^^^^^^
@@ -98,7 +98,7 @@ Training in RLite is very similar to PyTorch, where we first define a ``torch.nn
 
 The training engine of RLite just takes the user-defined ``rlite.nn.BaseTrainModule`` subclass and sends it to the accelerator. Therefore, this module MUST be initialized on the meta device to support efficient transfer.
 
-As you can see, the code is very similar to single-process PyTorch programs. The train engine will automatically handle data parallel or sequence parallel if the argument is wrapped by ``rlite.NeedParallel``. See :doc:`train` for more details.
+As you can see, the code is very similar to single-process PyTorch programs. The train engine will automatically handle data parallel or sequence parallel if the argument is wrapped by ``rlite.NeedParallel``. See :doc:`Train with RLite <train>` for more details.
 
 Device Management Interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
