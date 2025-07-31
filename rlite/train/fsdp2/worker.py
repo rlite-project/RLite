@@ -158,7 +158,12 @@ class Fsdp2Worker(BaseTrainWorker):
             post_process_fn = self.module.postprocess_output_named_parameters.__get__(self.model)
             for name, param in self._named_parameters.items():
                 yield post_process_fn(name, param, self._named_parameters)
-        save_safetensors(_param_iterator(), checkpoint_path)
+        save_safetensors(
+            _param_iterator(),
+            checkpoint_path,
+            total_len=len(self._named_parameters),
+            is_io_worker=self.rank_in_shard_group == 0
+        )
 
     @abort_if_not_cuda
     def load(self, checkpoint_path: str):

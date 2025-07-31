@@ -31,20 +31,20 @@ class BaseTrainExecutor(BaseExecutor, abc.ABC):
 
     def train(self) -> list[ray.ObjectRef]:
         """Switch to training mode."""
-        return [worker.train() for worker in self.workers]
+        return [worker.train.remote() for worker in self.workers]
 
     def eval(self) -> list[ray.ObjectRef]:
         """Switch to evaluation mode."""
-        return [worker.eval() for worker in self.workers]
+        return [worker.eval.remote() for worker in self.workers]
 
     def is_training(self) -> list[bool]:
         return [worker.is_training() for worker in self.workers]
 
     def save(self, checkpoint_path: str, *args, **kwargs) -> list[ray.ObjectRef]:
-        return [worker.save(checkpoint_path, *args, **kwargs) for worker in self.workers]
+        return [worker.save.remote(checkpoint_path, *args, **kwargs) for worker in self.workers]
 
     def load(self, checkpoint_path: str, *args, **kwargs) -> list[ray.ObjectRef]:
-        return [worker.load(checkpoint_path, *args, **kwargs) for worker in self.workers]
+        return [worker.load.remote(checkpoint_path, *args, **kwargs) for worker in self.workers]
 
 
 TRAIN_EXECUTOR_REGISTRY = Registry("Train Executors")
