@@ -3,8 +3,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "rlite"
-version = "0.1.0"
+name = "pyrlite"
+dynamic = ["version"]
 description = "A lightweight reinforcement learning framework that integrates seamlessly into your codebase, empowering developers to focus on algorithms with minimal intrusion."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -43,4 +43,4 @@ dev = [
 packages = ["rlite"]
 
 [tool.hatch.version]
-path = "src/rlite/__version__.py"
+path = "rlite/__version__.py"
