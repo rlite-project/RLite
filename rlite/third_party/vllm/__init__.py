@@ -14,7 +14,7 @@ package_name = "vllm"
 package_version = get_version(package_name)
 
 
-supported_versions = ["0.8.3", "0.8.4", "0.8.5", "0.8.5.post1"]
+supported_versions = ["0.8.3", "0.8.4", "0.8.5", "0.8.5.post1", "0.10.1+gptoss"]
 
 
 if package_version not in supported_versions:
@@ -26,6 +26,9 @@ if package_version in ["0.8.3", "0.8.4"]:
 
 elif package_version in ["0.8.5", "0.8.5.post1"]:
     from .vllm_0_8_5 import LLM
+
+elif package_version in ["0.10.1+gptoss"]:
+    from .vllm_0_10 import LLM
 
 
 __all__ = [

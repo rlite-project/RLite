@@ -205,7 +205,7 @@ class ResourceManager:
                 placement_group=bundle.placement_group,
                 resource_manager=self,
             )
-            source_bundle = self.get_bundle_by_id(bundle.bundle_id_in_placement_group)
+            source_bundle = self._get_bundle_by_id(bundle.bundle_id_in_placement_group)
             source_bundle -= new_bundle
             bundles.append(new_bundle)
 
@@ -331,7 +331,7 @@ class ResourceManager:
             bundle = self.resource_bundles[bundle]
         return ResourceManager.node_resource_info[bundle.node_id]["IP"]
 
-    @cached_property
+    @property
     def colocate_num_gpus(self) -> float:
         return 1 / self.MAX_COLATE_COUNT
 
@@ -350,7 +350,7 @@ class ResourceManager:
     def is_initialized(self) -> bool:
         return self.pg is not None
 
-    def get_bundle_by_id(self, bundle_id: int):
+    def _get_bundle_by_id(self, bundle_id: int):
         """Fetch the bundle by id, useful after sorting the bundles."""
         for bundle in self.resource_bundles:
             if bundle.bundle_id_in_placement_group == bundle_id:

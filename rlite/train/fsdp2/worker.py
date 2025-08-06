@@ -137,10 +137,21 @@ class Fsdp2Worker(BaseTrainWorker):
 
     @abort_if_not_cuda
     def load_state_dict(self, state_dict: dict | Generator):
+        # TODO: Support quantized state_dict loading. Directly loading a
+        #       quantized state dict from the safe tensors will run into
+        #       KeyError, e.g. the GPT-oss model.
+
         if isinstance(state_dict, dict):
             state_dict = state_dict.items()
 
+        exist_keys = set()
+
         for key, value in state_dict:
+
+            exist_keys.add(key)
+
+            if key not in self._named_parameters:
+                continue
 
             # Apply the preprocess function
             preprocess_fn = self.module.preprocess_input_named_parameters.__get__(self.model)
@@ -151,6 +162,10 @@ class Fsdp2Worker(BaseTrainWorker):
                 value, self.shard_group_world_size, dim=0
             )[self.rank_in_shard_group]
             self._named_parameters[key]._local_tensor.data.copy_(chunked_value)
+
+        for key in self._named_parameters:
+            if key not in exist_keys:
+                raise KeyError(f"Key '{key}' not found in the state_dict.")
 
     @abort_if_not_cuda
     def save(self, checkpoint_path: str):

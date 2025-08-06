@@ -113,26 +113,8 @@ class RliteTrainEngine(BaseEngine):
         **kwargs,
     ) -> dict:
         from rlite.train.fsdp2.executor import Fsdp2TrainExecutor
-        from rlite.train.fsdp.executor import FsdpTrainExecutor
 
-        if self.executor_cls is FsdpTrainExecutor and data_parallel_size > 1:
-            # Prepare replicate group master address and ports.
-            num_gpus_per_dp_group = tensor_parallel_size * pipeline_parallel_size
-            replicate_master_addrs = [
-                self._resource_manager.get_ip_addr(self._resource_bundles[i])
-                for i in range(num_gpus_per_dp_group)
-            ]
-            replicate_ports = [
-                self._resource_manager.get_free_port(self._resource_bundles[i])
-                for i in range(num_gpus_per_dp_group)
-            ]
-            return {
-                "module": self._module,
-                "replicate_master_addrs": replicate_master_addrs,
-                "replicate_ports": replicate_ports,
-            }
-
-        elif self.executor_cls is Fsdp2TrainExecutor:
+        if self.executor_cls is Fsdp2TrainExecutor:
             master_addr = self._resource_manager.get_ip_addr(self._resource_bundles[0])
             master_port = self._resource_manager.get_free_port(self._resource_bundles[0])
             mesh_shape = (data_parallel_size, tensor_parallel_size * pipeline_parallel_size)

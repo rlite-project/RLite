@@ -4,7 +4,7 @@ from rlite import RliteInferenceEngine
 if __name__ == "__main__":
     rlite.init()
 
-    model_name_or_path = "Qwen/Qwen2.5-7B-Instruct"
+    model_name_or_path = "openai/gpt-oss-120b"
     prompts = [
         "你好，请介绍一下你自己。",
         "Hello, how are you?",
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     ]
 
     engine = RliteInferenceEngine(model_name_or_path, executor="vllm")
-    engine.build(tensor_parallel_size=4)
+    engine.build(tensor_parallel_size=8)
 
     sampling_params = {"temperature": 0.7, "seed": 42}
     outputs = engine.generate(prompts, sampling_params=sampling_params)
