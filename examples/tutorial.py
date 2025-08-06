@@ -46,7 +46,7 @@ if __name__ == "__main__":
     fsdp2_engine = RliteTrainEngine(module, executor="fsdp2")
     fsdp2_engine.build(tensor_parallel_size=4, colocate_with=vllm_engine)
 
-    input_ids = [[x.outputs[0].token_ids for x in rollouts] for _ in range(4)]
+    input_ids = [[x[0].outputs[0].token_ids for x in rollouts] for _ in range(4)]
     grad_acc_steps = 4
 
     for step in range(grad_acc_steps):

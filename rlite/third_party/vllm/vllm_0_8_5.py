@@ -1,3 +1,4 @@
+import warnings
 from typing import Optional, Sequence, Union, cast
 
 from tqdm import tqdm
@@ -7,6 +8,7 @@ from vllm.model_executor.guided_decoding.guided_fields import (
     GuidedDecodingRequest
 )
 from vllm.outputs import RequestOutput
+from vllm.sampling_params import RequestOutputKind, SamplingParams
 
 
 class LLM(BaseLLM):
@@ -116,3 +118,60 @@ class LLM(BaseLLM):
         # This is necessary because some requests may be finished earlier than
         # its previous requests.
         return sorted(outputs, key=lambda x: int(x.request_id))
+
+    def _add_request(self, *args, **kwargs) -> str:
+        request_id = str(next(self.request_counter))
+        self.llm_engine.add_request(request_id, *args, **kwargs)
+        return request_id
+
+    def _validate_and_add_requests(
+        self,
+        prompts,
+        params,
+        lora_request,
+        prompt_adapter_request,
+        guided_options: Optional[GuidedDecodingRequest] = None,
+        priority: Optional[list[int]] = None,
+    ) -> None:
+        if guided_options is not None:
+            warnings.warn(
+                "guided_options_request is deprecated, use "
+                "SamplingParams.guided_decoding instead",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+
+        if isinstance(prompts, (str, dict)):
+            # Convert a single prompt to a list.
+            prompts = [prompts]
+
+        num_requests = len(prompts)
+        if isinstance(params, list) and len(params) != num_requests:
+            raise ValueError("The lengths of prompts and params "
+                             "must be the same.")
+        if isinstance(lora_request,
+                      list) and len(lora_request) != num_requests:
+            raise ValueError("The lengths of prompts and lora_request "
+                             "must be the same.")
+
+        for sp in params if isinstance(params, list) else (params, ):
+            if isinstance(sp, SamplingParams):
+                self._add_guided_params(sp, guided_options)
+
+                # We only care about the final output
+                sp.output_kind = RequestOutputKind.FINAL_ONLY
+
+        # Add requests to the engine.
+        request_ids = []
+        for i, prompt in enumerate(prompts):
+            request_id = self._add_request(
+                prompt,
+                params[i] if isinstance(params, Sequence) else params,
+                lora_request=lora_request[i] if isinstance(
+                    lora_request, Sequence) else lora_request,
+                prompt_adapter_request=prompt_adapter_request,
+                priority=priority[i] if priority else 0,
+            )
+            request_ids.append(request_id)
+
+        return request_ids

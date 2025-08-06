@@ -66,4 +66,4 @@ if __name__ == "__main__":
 
     outputs = engine.generate(prompts, sampling_params={"temperature": 0.7, "seed": 42})
     for output in outputs:
-        print("\033[92m", output.outputs[0].text, "\033[0m")
+        print(output)

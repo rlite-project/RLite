@@ -1,4 +1,5 @@
 import ray
+from ray.util.queue import Queue
 from vllm import SamplingParams
 
 from rlite.inference.vllm.worker import VllmWorker
@@ -56,15 +57,18 @@ class VllmInferenceExecutor(BaseInferenceExecutor):
 
     def generate(
         self,
-        prompts: list[str],
+        input_queue: Queue,
+        output_queue: Queue,
         sampling_params: dict | SamplingParams | None = None,
-        use_tqdm: bool = True,
-        tqdm_desc: str = "Processed prompts",
-        return_none: bool = False,
     ) -> list[ray.ObjectRef]:
         return [
-            worker.generate.remote(prompts, sampling_params, use_tqdm, tqdm_desc, return_none)
-            for worker in self.workers
+            worker.generate.remote(
+                input_queue,
+                output_queue,
+                sampling_params,
+                is_io_worker=(rank == 0)
+            )
+            for rank, worker in enumerate(self.workers)
         ]
 
     def p2p_weight_sync(self, another: BaseInferenceExecutor):

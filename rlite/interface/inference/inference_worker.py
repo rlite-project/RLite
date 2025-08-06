@@ -11,7 +11,6 @@ class BaseInferenceWorker(BaseWorker, abc.ABC):
         self,
         prompts: str | list[str],
         sampling_params: SamplingParams | dict | None = None,
-        use_tqdm: bool = True,
-        tqdm_desc: str = "Processed prompts"
+        **kwargs
     ) -> list[RequestOutput]:
         raise NotImplementedError()

@@ -19,4 +19,4 @@ if __name__ == "__main__":
     outputs = engine.generate(prompts, sampling_params=sampling_params)
 
     for prompt, output in zip(prompts, outputs):
-        print(f"\033[92m{prompt}\033[94m{output.outputs[0].text}\033[0m")
+        print(output)
