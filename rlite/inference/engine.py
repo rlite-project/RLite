@@ -233,7 +233,13 @@ class RliteInferenceEngine(BaseEngine):
 
         res = ray.get(futures)  # Ensure all tasks are completed
 
-        return res[-1]  # Return the collected outputs
+        outputs = res[-1]
+
+        # Handle the case where default_post_generation_hook is used
+        if post_generation_hook is default_post_generation_hook:
+            outputs = [output[0] for output in outputs]
+
+        return outputs
 
     def pre_build_executors_hook(self, **kwargs) -> dict:
         return {"model_path": self._module_path}
