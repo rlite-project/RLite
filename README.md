@@ -145,4 +145,69 @@ pytest
 pytest --cov=rlite
 ```
 
+#### Debug with VSCode
+
+##### Preparation
+
+Install `Command Variable` extension of VSCode. Add a `launch.json` under `.vscode/`, with the following content:
+
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Attach Dynamic",
+      "type": "debugpy",
+      "request": "attach",
+      "connect": {
+        "host": "${input:host}",
+        "port": "${input:port}"
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}",
+          "remoteRoot": "."
+        }
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "host",
+      "type": "command",
+      "command": "extension.commandvariable.transform",
+      "args": {
+        "text": "${promptStringRemember:hostPort}",
+        "find": ":.*",
+        "replace": "",
+        "promptStringRemember": {
+          "hostPort": {
+            "key": "hostPort",
+            "description": "Input host:port",
+          }
+        }
+      }
+    },
+    {
+      "id": "port",
+      "type": "command",
+      "command": "extension.commandvariable.transform",
+      "args": {
+        "text": "${remember:hostPort}",
+        "find": ".*:",
+        "replace": ""
+      }
+    }
+  ]
+}
+```
+
+##### Debug by attaching to remote workers
+
+1. Insert `breakpoint()` to the code you want to debug.
+2. Run the code until you see a message containing the IP:Port you can attach to.
+3. Copy the IP:Port, press F5, and paste the IP:Port to the prompted box.
+
+You should ba able to attach your VSCode to the breakpoint.
+
 </details>
