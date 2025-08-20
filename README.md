@@ -101,6 +101,10 @@ RLite provide minimal interfaces that are
 
 ![Weight Sync](assets/README/weight_sync.png)
 
+## Join Our Discussion on WeChat
+
+<img alt="WeChatGroup" src="./assets/README/wechat_group.png" width="200px">
+
 ## Contributing
 
 <details>
