@@ -1,5 +1,4 @@
 import torch
-from accelerate import init_empty_weights
 from peft import LoraConfig, TaskType, get_peft_model
 from torch.distributed.tensor import DTensor
 from transformers import Qwen2Config, Qwen2ForCausalLM
@@ -78,7 +77,7 @@ if __name__ == "__main__":
 
     vllm_engine.meta()  # Drop all the weights
 
-    with init_empty_weights():
+    with rlite.device("meta"):
         config = Qwen2Config.from_pretrained(model_name_or_path)
         model = apply_lora(MyModel(config))
 

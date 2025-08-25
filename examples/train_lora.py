@@ -50,9 +50,7 @@ class LoraTest:
 
     @cached_property
     def model(self):
-        from accelerate import init_empty_weights
-
-        with init_empty_weights():
+        with rlite.device("meta"):
             model = ModelForTest.from_pretrained(
                 "Qwen/Qwen2.5-7B",
                 attn_implementation="flash_attention_2"

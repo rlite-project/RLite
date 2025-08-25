@@ -1,5 +1,4 @@
 import torch
-from accelerate import init_empty_weights
 from transformers import (
     AutoConfig,
     AutoProcessor,
@@ -66,7 +65,7 @@ class MyQwenVLModel(rlite.nn.HuggingFaceFsdp2TrainModule, Qwen2_5_VLForCondition
 if __name__ == "__main__":
     rlite.init()
 
-    with init_empty_weights():
+    with rlite.device("meta"):
         config = AutoConfig.from_pretrained(
             "Qwen/Qwen2.5-VL-3B-Instruct",
             attn_implementation="flash_attention_2"

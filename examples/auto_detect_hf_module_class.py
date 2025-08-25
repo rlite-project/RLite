@@ -1,5 +1,4 @@
 import transformers
-from accelerate import init_empty_weights
 from transformers import AutoConfig
 
 import rlite
@@ -19,7 +18,7 @@ if __name__ == "__main__":
     class Actor(actor_cls, rlite.nn.HuggingFaceFsdp2TrainModule):
         ...
 
-    with init_empty_weights():
+    with rlite.device("meta"):
         module = Actor(config)
     engine = RliteTrainEngine(module, executor="fsdp2")
     engine.build(tensor_parallel_size=4)

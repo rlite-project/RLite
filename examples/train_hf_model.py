@@ -1,7 +1,6 @@
 import torch
 import torch.nn.functional as F
 import torch.optim
-from accelerate import init_empty_weights
 from transformers import Qwen2Config, Qwen2ForCausalLM
 
 import rlite
@@ -33,7 +32,7 @@ class MyQwenModel(rlite.nn.HuggingFaceFsdp2TrainModule, Qwen2ForCausalLM):
 if __name__ == "__main__":
     rlite.init()
 
-    with init_empty_weights():  # Init on meta device
+    with rlite.device("meta"):  # Init on meta device
         config = Qwen2Config.from_pretrained(
             "Qwen/Qwen2.5-1.5B-Instruct",
             attn_implementation="flash_attention_2"

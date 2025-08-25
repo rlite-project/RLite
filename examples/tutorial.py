@@ -1,6 +1,5 @@
 import torch
 import torch.nn.functional as F
-from accelerate import init_empty_weights
 from transformers import Qwen2ForCausalLM
 
 import rlite
@@ -41,7 +40,7 @@ if __name__ == "__main__":
 
     vllm_engine.meta()  # Release everything from GPU
 
-    with init_empty_weights():
+    with rlite.device("meta"):
         module = MyQwenModel.from_pretrained("Qwen/Qwen2.5-7B-Instruct")
     fsdp2_engine = RliteTrainEngine(module, executor="fsdp2")
     fsdp2_engine.build(tensor_parallel_size=4, colocate_with=vllm_engine)
